@@ -1,19 +1,50 @@
+import React from 'react';
+import { useEffect, useState } from 'react';
+import RecipeTagList from './RecipeTagList';
+import RecipeList from './RecipeList';
+import { IRecipe } from './Types';
 
 const App = () => {
+ 
+  const [tagList, setTagList] = useState<string[]>([]);
+  const [recipeList, setRecipeList] = useState<IRecipe[]>([]);
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
+  useEffect(getMeTheTagList, []);
+  useEffect(() => {
+    if (selectedTag) {
+      fetch(`https://dummyjson.com/recipes/tag/${selectedTag}`)
+        .then((response) => response.json())
+        .then((data) => setRecipeList(data.recipes)); 
+    } }, [selectedTag]);
+  
+  function onSelectTag(tagName: string) {
+    setSelectedTag(tagName); 
+  
+  }
+  function getMeTheTagList() {
+    fetch('https://dummyjson.com/recipes/tags')
+    .then(response => response.json())
+    .then(data => setTagList(data));
+  }
+  const handleGoBack = () => {
+    setSelectedTag(null);  
+  };
 
   return (
     <div>
-        <h1>ACME Recipe O'Master</h1>
-        <div>Remove this and implement recipe tag list here. </div>
-        <ul>
-        <li>On start the application displays a list of recipe tags such as 'pasta', 'cookies' etc. The tag information is loaded from an API (https://dummyjson.com/recipes/tags)</li>
-        <li> The user can click on a tag and the application will then hide the tag list and display a list of recipes matching the selected tag. The recipe information for the clicked tag is loaded from an API (https://dummyjson.com/recipes/tag/Pizza).</li>
-        <li> User can also go back to the tag list. </li>
-        <li> Each receipe is displayed as box where recipe data such as ingredients and instructions are displayed</li>
-        </ul>
+ <h1>ACME Recipe O'Master</h1>
+{selectedTag ? (
+        <RecipeList recipes={recipeList} onGoBack={handleGoBack} />
+      ) : (
+        <RecipeTagList tagList={tagList} onSelectTag={onSelectTag} />
+      )}
+       
     </div>
   );
+
+
 };
+
 
 export default App;
